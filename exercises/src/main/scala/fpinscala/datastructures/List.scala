@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -50,15 +52,40 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
-  def tail[A](l: List[A]): List[A] = ???
+  def tail[A](l: List[A]): List[A] =
+    l match {
+      case Nil => sys.error("cannot tail nil")
+      case Cons(_, tail) => tail
+    }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] =
+    l match {
+      case Nil => sys.error("cannot setHead of nil")
+      case Cons(_, tail) => Cons(h, tail)
+    }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  @tailrec
+  def drop[A](l: List[A], n: Int): List[A] =
+    (l,n) match {
+      case (Nil,_) => sys.error("cannot drop of nil")
+      case (l,0) => l
+      case (Cons(_,tail), n) if (n>0) => drop(tail, n-1)
+      case _ => sys.error("n should be >= 0")
+    }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  @tailrec
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] =
+    l match {
+      case Nil => Nil
+      case Cons(h,t) => if (f(h)) dropWhile(t,f) else l
+    }
 
-  def init[A](l: List[A]): List[A] = ???
+  def init[A](l: List[A]): List[A] =
+    l match {
+      case Nil => Nil
+      case Cons(h, Nil) => Nil
+      case Cons(h,t) => Cons(h,init(t))
+    }
 
   def length[A](l: List[A]): Int = ???
 
